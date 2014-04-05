@@ -22,6 +22,7 @@ module Middleman
       def generate(source_dir, output_dir, origin, specs)
         origin_absolute = File.join(source_dir, origin)
         yield_images(origin_absolute, specs) do |img, spec|
+          puts "thumbnailer: #{spec[:name]}"
           output_file = File.join(output_dir, spec[:name])
           origin_mtime = File.mtime origin_absolute
           #FIXME: this sucks & I should be shot, however in before_build, we havend created the build dir
