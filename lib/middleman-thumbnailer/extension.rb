@@ -38,10 +38,20 @@ module Middleman
 
             files = DirGlob.glob(dir, namespace, options[:filetypes])
 
+            ThumbnailGenerator::Manifest.read
+
             files.each do |file|
               path = file.gsub(source_dir, '')
               specs = ThumbnailGenerator.specs(path, dimensions)
-              ThumbnailGenerator.generate(source_dir, File.join(root, build_dir), path, specs)
+              if !ThumbnailGenerator::Manifest.include?(path)
+                puts "+ #{path}".green
+                ThumbnailGenerator.generate(source_dir, File.join(root, build_dir), path, specs)
+                ThumbnailGenerator::Manifest.add path
+              else
+                puts "~ #{path}".blue
+              end
+
+              ThumbnailGenerator::Manifest.write
             end
           end
 

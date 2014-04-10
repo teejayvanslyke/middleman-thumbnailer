@@ -1,9 +1,39 @@
 require 'RMagick'
 require 'fileutils'
+require 'json'
+require 'digest/md5'
+require 'colorize'
 
 module Middleman
   #actually creates the thumbnail names
   class ThumbnailGenerator
+
+    class Manifest
+      class << self
+        def add(path)
+          md5 = Digest::MD5.file(File.join('source', path))
+          @paths[path] = md5.hexdigest
+        end
+
+        def include?(path)
+          md5 = Digest::MD5.file(File.join('source', path))
+          @paths[path] == md5.hexdigest
+        end
+
+        def read
+          @paths = JSON.parse(File.read('thumbnails.json'))
+        rescue
+          @paths = {}
+        end
+
+        def write
+          File.open('thumbnails.json', 'w') do |file|
+            file.write JSON.generate(@paths)
+          end
+        end
+      end
+    end
+
     class << self
 
       def specs(origin, dimensions)
@@ -22,7 +52,6 @@ module Middleman
       def generate(source_dir, output_dir, origin, specs)
         origin_absolute = File.join(source_dir, origin)
         yield_images(origin_absolute, specs) do |img, spec|
-          puts "thumbnailer: #{spec[:name]}"
           output_file = File.join(output_dir, spec[:name])
           origin_mtime = File.mtime origin_absolute
           #FIXME: this sucks & I should be shot, however in before_build, we havend created the build dir
@@ -34,7 +63,7 @@ module Middleman
             img.write output_file 
           end
           File.utime(origin_mtime, origin_mtime, output_file)
-       end
+        end
       end
 
       def yield_images(origin, specs)
