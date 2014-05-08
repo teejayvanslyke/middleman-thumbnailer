@@ -93,7 +93,7 @@ module Middleman
 
         html_options.merge!(
           'data-aspect-ratio' => aspect_ratio(image)
-        ) if Thumbnailer.options[:include_data_thumbnails]
+        ) if Thumbnailer.options[:include_aspect_ratio]
 
         image_tag(thumbnail_url(image, name), html_options)
       end
