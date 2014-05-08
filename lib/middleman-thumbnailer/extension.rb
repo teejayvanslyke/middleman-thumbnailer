@@ -78,10 +78,22 @@ module Middleman
         url
       end
 
+      def aspect_ratio(origin)
+        image = ::Magick::Image.read(origin).first
+        return -1 unless image
+        (image[:width].to_f / image[:height].to_f)
+      end
+
       def thumbnail(image, name, html_options = {})
         specs_for_data_attribute = thumbnail_specs(image, name).map {|name, spec| "#{name}:#{spec[:name]}"}
 
-        html_options.merge!({'data-thumbnails' => specs_for_data_attribute.join('|')}) if Thumbnailer.options[:include_data_thumbnails]
+        html_options.merge!(
+          'data-thumbnails' => specs_for_data_attribute.join('|')
+        ) if Thumbnailer.options[:include_data_thumbnails]
+
+        html_options.merge!(
+          'data-aspect-ratio' => aspect_ratio(image)
+        ) if Thumbnailer.options[:include_data_thumbnails]
 
         image_tag(thumbnail_url(image, name), html_options)
       end
